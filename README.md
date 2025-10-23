@@ -186,16 +186,16 @@ ais-masterclass-newsletter/
    uv run uvicorn api.api:app --host 0.0.0.0 --port 8000 --reload
    ```
    
-   **Newsletter Generation**:
-   ```bash
-   uv run main.py --language en-US  # or es-CL, pt-BR
-   ```
-   
    **Frontend** (in separate terminal):
    ```bash
    cd frontend
    npm install
    npm run dev
+   ```
+      
+   **For independent Agent Run (HTML Generation)**:
+   ```bash
+   uv run main.py --language en-US  # or es-CL, pt-BR
    ```
 
 
