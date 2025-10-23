@@ -1,0 +1,381 @@
+analyse_structured_chart_task:
+  agent: chart_interpreter_agent
+  description: >
+    Analyze the economic data visualizations file stored in a specified chart folder.
+    For each PNG chart in the folder:
+    1. Load the image and interpret the key trends, comparisons, and outliers shown.
+    2. Summarize the main insights in clear, business-oriented language.
+    3. Provide actionable recommendations or explanations based on the visualized data.
+
+    ---
+    Present your findings as an analysis, Avoid using "the chart shows" or similar phrases.
+
+    Be concise and focus on the most relevant insights for a business audience.
+    Make the analysis clear and actionable and short.
+    ---
+
+    Focus on:
+    - Identifying trends, patterns, and anomalies in the charts
+    - Explaining the significance of the visualized data for business readers
+    - Making the analysis --concise--, clear, and actionable
+
+    Output:
+    - For each chart, provide a short summary of key findings and recommendations.
+    - Use plain text formatting for clarity.
+    - Reference the chart file name in each summary.
+
+  expected_output: >
+    A concise summary --In Plain Text-- of insights and recommendations for each chart, focusing on key trends and actionable findings.
+ 
+research_web_topic_task:
+  agent: web_data_acquisition_agent
+  description: >
+    Research and curate high-quality web content about {newsletter_topic}. Focus on:
+    1. Search for articles published within the last 30 days from credible sources
+    2. Identify trending topics, breakthrough developments, and industry insights
+    3. Evaluate source credibility and content relevance for business audiences
+    4. Extract key findings, statistics, and quotes that add value
+    5. Organize findings by themes and importance for newsletter structure
+
+    PRESENTATION (generic):
+    - Start with a brief lead-in (2–5 sentences) explaining what changed and why it matters for {newsletter_topic}.
+    - Then provide a curated list of 6–10 items in clean HTML.
+    - Do NOT append a date after the source; if timing matters, include it inside the one-sentence takeaway.
+
+    LINKS (HTML-ONLY):
+    - Use SerperDevTool to get the canonical URL and include it as a clickable <a href="...">text</a> (no Markdown).
+    - Include the source name INSIDE the one-sentence takeaway (e.g., “... according to SOURCE” or “SOURCE reports ...”).
+    - Do NOT append a separate trailing “(Source)”.
+    - Avoid bare URLs; always wrap links in <a href="...">text</a>.
+    - Add target="_blank" rel="noopener noreferrer" to external anchors.
+
+    REFERENCES (HTML-ONLY):
+    - At the end, output a compact HTML block listing all sources used as clickable links:
+      <h4>References</h4>
+      <ol>
+        <li><a href="URL" target="_blank" rel="noopener noreferrer">Source Name — Article Title</a></li>
+      </ol>
+    Respond in {language}.
+
+  expected_output: |
+    A structured research report with categorized insights, source citations, and
+    content recommendations ready for newsletter integration. Include trending topics,
+    key statistics, and notable quotes with proper attribution.
+
+    Output order:
+    1) Lead-in (2–5 sentences) in clean HTML (<p>…</p>)
+    2) <ul> of 6–10 curated items, each as:
+       <li><a href="URL" target="_blank" rel="noopener noreferrer">Concise headline</a> — one-sentence takeaway that explicitly cites the source inside the sentence (e.g., "... according to SOURCE").</li>
+    3) Final "References" HTML block:
+       <h4>References</h4>
+       <ol>
+         <li><a href="URL" target="_blank" rel="noopener noreferrer">Source Name — Article Title</a></li>
+       </ol>
+
+create_newsletter_task:
+  agent: newsletter_writer_agent
+  context: [research_web_topic_task]
+  description: >
+    Create a comprehensive newsletter using the web research findings about {newsletter_topic}.
+    Structure the newsletter with:
+    1. Executive summary highlighting key takeaways
+    2. Main content sections organized by themes from research
+    3. Industry trends and developments
+    4. Key statistics and notable quotes
+    5. Actionable recommendations for readers
+    6. Professional formatting with clear headers and visual hierarchy
+    Preserve and embed the HTML <a href> links provided by the research task.
+
+    INTEGRATION NOTES (HTML-ONLY):
+    - Do NOT output a full email template; provide content blocks only (the designer will apply the template).
+    - Do NOT add dates after sources; keep dates only within the body text when relevant.
+    - Preserve the in-sentence source attribution from research (e.g., “... according to SOURCE”); do not move it to a trailing parenthesis.
+    - If any Markdown remnants appear ([text](url), **bold**), convert them to HTML anchors/strong before output. Never emit Markdown.
+    - If you delegate to another coworker, call the tool with plain string values: `task="..."`, `context="..."`, and the coworker name. Do NOT wrap strings in JSON or objects.
+
+    Respond in {language}.
+
+  expected_output: >
+    Complete newsletter draft in professional HTML blocks with engaging content,
+    proper citations, clear sections, and actionable insights for business audiences (no Markdown).
+
+query_generation_task:
+  agent: structured_query_agent
+  description: >
+    Read the configuration in 'src/config/newsletter/structured_data.yaml' 
+    develop optimized SQL queries for each necessary table_name and 
+    store the queries in '{output_folder}/structured_data/queries'.
+    
+    ------
+    You can reutilize existing queries in '{output_folder}/structured_data/queries' if there's any
+    Execute the queries and check they execute without errors
+    Execute the queries and check the number of items returned in the query results
+
+    Store each query in '{output_folder}/structured_data/queries' 
+    as '<table_name.json>'.
+    ------
+
+    Focus on:
+    1. Extracting the specified data fields in the configuration
+    2. Performing the tasks specified in the configuration
+    3. Checking the queries execute without errors
+    4. Checking the data has the expected fields in the configuration
+    5. Checking the number of items returned in the query results (e.g. empty list, too many results).
+
+  expected_output: >
+    An optimized and executable SQL query for each table_name, 
+    located at '{output_folder}/structured_data/queries' stored as table_name.json 
+    
+    e.g. for table names "economic_index_1", "economic_index_2" store only
+    the jsons economic_index_1.json, and economic_index_2.json. Each with the
+    fields {"table_name": "economic_index_1/2", "query": "SELECT ..."}
+
+structured_data_store_task:
+  agent: structured_data_acquisition_agent
+  context: [query_generation_task]
+  description: >
+    Read the configuration in 'src/config/newsletter_v2/structured_data.yaml' 
+    and for each table name, check the queries folder 
+    '{output_folder}/structured_data/queries' for its SQL query in json format. 
+    
+    ----
+    Execute each query and store the data in '{output_folder}/structured_data/data' 
+    as '<table_name.json>'. 
+    
+    Get the table name from 'src/config/newsletter_v2/structured_data.yaml'.
+    ----
+
+    Focus on:
+    1. Executing the query and returning the results
+    2. Returning the data in a structured JSON format for downstream processing
+    3. Handling errors and providing informative error messages if the query fails
+
+  expected_output: >
+    A JSON object containing the query results, or an error message in 
+    '{output_folder}/structured_data/data' as '<table_name.json>'. 
+    
+    e.g. for the query json object  {"table_name": "economic_index_1/2", "query": "SELECT ..."}  
+    store the json economic_index_1/2.json with contents [{"field_1": value_1,"field_2": value_2, ... }, ...]
+
+generate_structured_data_chart_task:
+  agent: data_visualization_agent
+  context: [structured_data_store_task]
+  description: >
+    Read the configuration in 'src/config/newsletter/structured_data.yaml' in the 
+    section 'visualization'. 
+    
+    For each specified table_name, locate its data in 
+    '{output_folder}/structured_data/data' and its template in 'templates/charts'.
+
+    Use the templates to create clear and insightful visualizations
+    of the economic time series data following the configuration visualization data.
+
+    ----
+    Store the resulting charts in '{output_folder}/structured_data/charts'
+    as <table_name.png>
+    ----
+
+    Focus on:
+    1. Generating a line chart showing trends over time for the specified fields
+    2. Highlighting key trends, comparisons, and outliers
+    3. Ensuring visualizations are easy to interpret with clear labels and legends
+    4. Using color schemes that enhance readability and engagement
+    5. Providing brief captions explaining the significance of each visualization
+    
+    Any chart captions must be in {language}. Respond in {language}.
+  expected_output: >
+    A png visualization in '{output_folder}/structured_data/charts' 
+    as <table_name.png> that effectively communicates the key insights 
+    from the economic data for inclusion in the newsletter.
+
+design_newsletter_task:
+  agent: newsletter_designer_agent
+  context:
+    - research_web_topic_task
+    - create_newsletter_task
+    - generate_news_image_task
+    - analyse_structured_chart_task
+    - review_newsletter_content_task
+    - vector_summary_task
+  description: |
+    You are a Newsletter Designer.
+
+    WORKFLOW
+    1) Use the `template_loader` tool WITHOUT arguments to list all available templates.
+    2) Decide which template best matches the topic: {newsletter_topic}.
+    3) Call `template_loader` with the `name` argument (e.g. 'vintage.html') to load that template’s HTML.
+    4) Replace ALL tokens using the research and draft provided in the context.
+       - Do not leave any tokens unresolved.
+       - Preserve the structure and inline styles of the chosen template.
+       - Ignore any full-page HTML present in the context; ALWAYS start from the loaded template and only replace tokens.
+    5) HTML SANITIZATION (before replacing tokens):
+       - If the content contains Markdown links [text](url), convert them to pure HTML: <a href="url">text</a>.
+       - Remove any Markdown bold/italics markers (** __ * _) while preserving text.
+       - Ensure lists are valid HTML (<ul><li>…</li></ul>), no stray “•” bullets.
+       - All anchors must include target="_blank" rel="noopener noreferrer".
+    6) ALWAYS-ON SECONDARY FEATURE (image + copy) — MUST ALWAYS APPEAR:
+       - This newsletter must always include a second section titled “FEATURE” (or equivalent), placed below the main article and above the footer.
+       - If the loaded template already contains a section commented as <!-- Always-on secondary feature (image + copy) -->, populate that block.
+       - Include the structured data chart text analysis in this section.
+       - Copy rules for the section:
+         * Keep sources inline using clickable <a href="..."> anchors (no References section).
+         * Do not invent numeric values; write qualitative insights if numbers aren’t available.
+       - The feature image src is LITERAL and MUST remain exactly: <img src="output/structured_data/charts/ipca.png" …>. Do not change this path.
+
+    7) HERO (DALL·E) — MUST APPEAR ABOVE THE MAIN ARTICLE:
+       - From context, parse the latest lines starting with:
+         HERO_IMAGE_URL: ...
+         HERO_IMAGE_ALT: ...
+       - Map into template tokens (if present): hero_image_url, hero_image_alt.
+       - If the template lacks a HERO block, INSERT a single-image row below the masthead and above the main content with:
+         <img src="[[hero_image_url]]" alt="[[hero_image_alt]]" style="display:block;width:100%;height:auto;">    
+    8) TOKEN HANDLING & FALLBACKS (general):
+       - If the template includes a read_more_url token and no URL is explicitly given, use the first relevant link from the curated list (never href="#").
+       - If any token lacks content (e.g., contact_email, handle), remove the token and, if needed, its nearest wrapper so no raw tokens remain in the final HTML.
+       - Keep sources inline via clickable <a href="..."> anchors (no References section).
+
+    9) VECTOR INSIGHTS (from vector_summary_task) — MUST APPEAR:
+       - Use ONLY the output of vector_summary_task for this block; ignore research/writer/QA/structured content.
+       - Do not add facts or links that are not present in vector_summary_task.
+       - Map fields:
+         * Executive Summary → [[vector_exec_bullets]] as a <ul><li>…</li></ul> (5–10 items).
+         * Why it matters → [[vector_why_paragraph]] (single <p>…</p>).
+         * Top quotes/snippets → [[vector_quotes_html]] (up to 3 <blockquote>…</blockquote>).
+       - If any of these are missing, keep the token empty; never fabricate content.
+
+    10) Return ONLY a complete HTML document:
+       - Your final answer MUST be a single valid HTML document that starts with <!doctype html> and ends with </html>.
+       - Do NOT include analysis, thoughts, or any text before/after the HTML. If any exists, DELETE it.
+       - It must start with <!doctype html> and end with </html>.
+       - Do not include any commentary or extra text outside the HTML.
+       - Do NOT wrap the HTML in code fences (no ```html).
+
+    NOTES
+    - Expected tokens may include: [[masthead_name]], [[publish_date]], [[handle]], [[weekday]],
+      [[headline]], [[subhead]], [[snippet_intro]], [[snippet_body]], [[read_more_url]],
+      [[article_image_url]], [[contact_email]], [[hero_image_url]], [[hero_image_alt]], etc.
+    - If the chosen template uses a different set of tokens, adapt to the tokens found in that template.
+    - Do not invent a new layout; only replace the tokens of the selected template.
+    - Your final answer MUST be a single valid HTML document that starts with <!doctype html> and ends with </html>.
+    - Do NOT include analysis, thoughts, or any text before/after the HTML. If any exists, DELETE it.
+    - Respond in {language}.
+  expected_output: >
+    A single, complete HTML file ready for email:
+    - Begins with <!doctype html> and ends with </html>.
+    - Uses the chosen template (loaded via template_loader); no custom layout.
+    - All template tokens are replaced (none unresolved).
+    - No Markdown artifacts remain (only valid HTML).
+    - The “Always-on secondary feature (image + copy)” section is present below the main article and above the footer.
+    - If a valid secondary_image_url is provided, the section includes an <img> that fills its column (width:100%; height:auto;).
+    - If no valid image is provided, the section still appears with a 100% width text column.
+    - Your final answer MUST be a single valid HTML document that starts with <!doctype html> and ends with </html>.
+
+generate_news_image_task:
+  agent: image_creator_agent
+  context:
+    - research_web_topic_task
+    - create_newsletter_task
+  description: |
+    You are the Image Creator.
+
+    GOAL
+    - Use the newsletter topic ({newsletter_topic}) plus the research & writer drafts (context)
+      to craft a short, brand-safe prompt (no text-in-image, no logos, no faces, no trademarks).
+    - Then CALL the `DallETool` to generate ONE image.
+
+    OUTPUT (return EXACTLY these two lines, nothing else):
+    HERO_IMAGE_URL: https://...
+    HERO_IMAGE_ALT: short, descriptive alt (<=120 chars)
+
+    NOTES
+    - Prefer abstract/illustrative imagery with good contrast for email.
+    - If the tool fails or no URL can be produced, return nothing.
+    - Respond in {language}.
+  expected_output: |
+    HERO_IMAGE_URL: ...
+    HERO_IMAGE_ALT: ...
+
+
+review_newsletter_content_task:
+  agent: content_reviewer_agent
+  context:
+    - research_web_topic_task
+    - create_newsletter_task
+    - generate_news_image_task
+    - query_generation_task
+    - structured_data_store_task
+    - generate_structured_data_chart_task
+    - analyse_structured_chart_task
+  description: >
+    You are the QA reviewer BEFORE the Designer. Read upstream outputs
+    (web research, writer draft, structured/visualization analysis) and
+    provide a DIAGNOSTIC REPORT ONLY. Do NOT rewrite, reformat, or re-emit
+    the content. Do NOT output HTML or JSON intended for the template.
+
+    SCOPE (read-only checks):
+    - Freshness: prefer ≤14 days; allow ≤30 if valuable. Flag >30.
+    - Links hygiene: no bare URLs in writer/research blocks; anchors must be well-formed with
+      target="_blank" rel="noopener noreferrer" (report if missing).
+    - In-sentence attribution present in curated items and stats/quotes.
+    - Deduplication: 6–10 curated items after removing duplicates by URL/topic (report actual count).
+    - References block present and consistent (if your workflow expects one).
+    - Language/tone: professional, concise. Note any grammar/style issues.
+    - Feature/Hero: if applicable, confirm presence of feature copy and HERO lines.
+
+    IMPORTANT:
+    - Do NOT propose or print “cleaned” content.
+    - Do NOT emit HTML fragments or JSON payloads.
+    - Never include <!doctype>, <html>, or any template-like output.
+    - Your output is for humans only; downstream agents must ignore it.
+
+    OUTPUT (PLAIN TEXT ONLY):
+    QA_REPORT:
+    - Verdict: PASS | PASS_WITH_WARNINGS | FAIL (BLOCKERS)
+    - Curated items: <count> (expected 6–10)
+    - Freshness: <ok/warn/details>
+    - Links hygiene: <ok/warn/details>
+    - Attribution & citations: <ok/warn/details>
+    - References: <ok/warn/details>
+    - Language & tone: <ok/warn/details>
+    - Feature/Hero: <ok/warn/details>
+    - Blockers (if any): <short list>
+    - Suggestions (non-binding): <bulleted short tips>
+    - Respond in {language}.
+
+  expected_output: >
+    Plain-text QA report (human-readable diagnostics). Contains no HTML/JSON content
+    and does not modify upstream outputs.
+vector_fetch_task:
+  agent: vector_fetch_agent
+  description: >
+    STRICT MODE — EVIDENCE ONLY.
+    Given the user's query "{query}", call the tool that fetches Weaviate results
+    and return its raw output as-is. Do NOT paraphrase, summarize, or add text.
+    Keep ONLY the evidence text from PDFs (APPENDED_TEXT) and the trace JSON (SUMMARY_JSON).
+    Scope must be strictly tied to the current {query}; ignore any earlier inputs.
+    If the tool returns no evidence, still output the APPENDED_TEXT header (empty) and a SUMMARY_JSON
+    with "total_kept": 0 and a note about no evidence found.
+    Respond in {language}.
+  expected_output: >
+    A section "APPENDED_TEXT" that lists raw snippets (each line starts with "[filename p.X]"),
+    followed by a "SUMMARY_JSON" code block with keys: query, used_files[], total_kept.
+
+vector_summary_task:
+  agent: vector_summary_agent
+  context: [vector_fetch_task]
+  description: >
+    STRICT MODE — SUMMARIZE ONLY FROM EVIDENCE.
+    Read ONLY the "APPENDED_TEXT" produced by the previous task and summarize the most important
+    insights strictly related to "{query}".
+    Rules:
+    - Use exclusively the evidence lines. If a fact is not present verbatim in the evidence, do NOT include it.
+    - Ignore any content from web research, writer drafts, QA notes, or charts.
+    - If there is no direct evidence about "{query}", output exactly:
+      "No direct evidence from PDFs for the current query."
+    - For each bullet include a light citation with the first [filename p.X] where it came from.
+    Output in {language}.
+  expected_output: >
+    Markdown with sections:
+    - Executive Summary (5–10 bullets, each tied to [filename p.X])
+    - Why it matters (1 short paragraph)
+    - Top quotes/snippets (up to 5 items, <=200 chars each, verbatim from evidence)

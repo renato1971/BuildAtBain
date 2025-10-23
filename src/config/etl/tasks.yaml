@@ -1,0 +1,309 @@
+analyze_and_configure_table_task:
+  description: >
+    For the table '{table_name}' from the database, perform a comprehensive analysis
+    and create a structured configuration entry for structured_data.yaml.
+    
+    WORKFLOW:
+    
+    1. LOAD CONFIG TEMPLATE (Reference):
+       - Read the existing structured_data.yaml file at '{config_template_path}' to understand
+         the expected format and structure for configurations.
+       - Note the pattern: each table has description, fields, task, validations, and visualization sections.
+    
+    2. READ DATA FROM DATABASE:
+       - Use get_table_schema tool to retrieve the table's column names, data types, 
+         nullable status, and default values.
+       - Use sample_table_data tool to get 5-10 sample rows to understand the actual data patterns.
+       - Examine the data to identify key fields, date columns, numeric measures, categorical dimensions.
+    
+    3. UNDERSTAND DATA AND FIELDS:
+       - Analyze the table name and column names to infer the table's business purpose.
+       - Identify which fields are most relevant for analysis (exclude internal IDs, metadata unless relevant).
+       - Look for date/time fields that could be used for time-series analysis.
+       - Identify numeric fields that represent measurements or values.
+       - Note any fields with unusual names or encodings that need transformation.
+       - Consider data quality issues (nulls, formats, inconsistencies).
+    
+    4. CREATE YAML SECTIONS:
+       Generate a complete configuration with these sections:
+       
+       a) description: >
+          Write a clear 2-4 sentence description explaining:
+          - What data this table contains
+          - What it measures or tracks
+          - Its business/analytical purpose
+          - Any relevant context about the data source
+       
+       b) fields:
+          List 3-10 most relevant fields for analysis (as a YAML list):
+          - Include fields that would be needed for queries
+          - Exclude purely technical fields unless necessary
+          - Example: ['valor', 'data', 'categoria']
+       
+       c) task:
+          Define a YAML list of data transformation/preparation steps needed:
+          - Field renamings for clarity (e.g., "Rename valor to monthly_value")
+          - Data type conversions (e.g., "Convert date_int to date format YYYY-MM")
+          - Filtering rules (e.g., "Filter by status = 'active'")
+          - Aggregations or calculations if needed
+          - Time range selections (e.g., "Return most recent 12 months")
+          Example:
+            - Rename cryptic_field to clear_name
+            - Convert date_int (yyyymm) to date format (YYYY-MM)
+            - Filter by category_code = '1234'
+            - Return most recent 12 months
+       
+       d) validations:
+          Define a YAML list of data quality checks:
+          - Row count expectations (e.g., "The query returns exactly 12 rows")
+          - Null value checks (e.g., "There are no null values in the value field")
+          - Format validations (e.g., "date field is in format YYYY-MM")
+          - Uniqueness checks (e.g., "All date values are unique")
+          - Range checks if applicable
+          Example:
+            - The query returns between 10 and 15 rows
+            - There are no null values in the value field
+            - All dates are unique
+            - Values are positive numbers
+       
+       e) visualization:
+          Recommend an appropriate visualization as a single string:
+          - Specify chart type (line, bar, scatter, etc.)
+          - Mention what should be plotted (x-axis, y-axis)
+          - Describe the time period or scope
+          - Keep it concise but descriptive
+          Example: "Time series line chart showing monthly values over the most recent 12 months"
+    
+    5. APPEND TO STRUCTURED_DATA.YAML:
+       - Use append_to_yaml tool to add the new configuration to '{output_yaml_path}'.
+       - The tool expects a JSON string with keys: description, fields, task, validations, visualization.
+       - Ensure the JSON is properly formatted before calling the tool.
+    
+    IMPORTANT NOTES:
+    - Base all analysis on actual schema and data, not assumptions.
+    - If sample data is limited or unclear, note this in the description.
+    - Keep descriptions clear and concise for downstream agents to understand.
+    - Ensure all field names mentioned in task/validations actually exist in the table.
+    - Make transformations realistic and achievable with SQL.
+    
+  expected_output: >
+    A confirmation message that the table '{table_name}' has been analyzed and
+    its configuration has been successfully appended to '{output_yaml_path}'.
+    
+    The configuration should include all five required sections:
+    - description (string)
+    - fields (list of strings)
+    - task (list of transformation steps)
+    - validations (list of validation rules)
+    - visualization (string describing recommended chart)
+
+batch_analyze_tables_task:
+  description: >
+    Analyze multiple tables from the database and create configurations for each.
+    
+    WORKFLOW:
+    
+    1. DISCOVER TABLES:
+       - Use get_table_names tool to list all available tables in the database.
+       - Alternatively, use the provided list of table names from '{table_list}'.
+       - Don't include or use the table newsletters or newsletters_content. Skip it!
+    
+    2. FILTER TABLES:
+       - Identify tables that need configuration by checking which ones are NOT
+         already present in '{output_yaml_path}'.
+       - Focus on tables that appear to contain analytical/business data
+         (exclude purely technical/system tables if obvious).
+    
+    3. PROCESS EACH TABLE:
+       - For each table that needs configuration, perform the full analysis workflow:
+         a) Get schema information
+         b) Sample data
+         c) Understand structure and purpose
+         d) Generate configuration
+         e) Append to YAML file
+    
+    4. SUMMARY:
+       - Keep track of successfully processed tables
+       - Note any tables that couldn't be processed (with reasons)
+       - Provide a final summary of all configurations created
+    
+    NOTES:
+    - Process tables one at a time to ensure quality
+    - Skip tables that already have configurations unless explicitly told to update
+    - If a table is too complex, document what you know and mark it for manual review
+    
+  expected_output: >
+    A summary report listing:
+    - Total tables discovered
+    - Tables successfully configured (with names)
+    - Tables skipped (already configured or excluded, with names)
+    - Any errors or issues encountered
+    - Confirmation that all new configurations were appended to '{output_yaml_path}'
+
+quality_assurance_task:
+  description: >
+    Validate the quality of all table configurations in the structured_data.yaml file
+    by comparing them against the actual database tables.
+    
+    WORKFLOW:
+    
+    1. READ CONFIGURATIONS:
+       - Use read_structured_data_yaml tool to load all table configurations from '{output_yaml_path}'.
+       - Parse the YAML and identify all configured tables.
+    
+    2. VALIDATE EACH CONFIGURATION:
+       For each table configuration, perform the following checks:
+       
+       a) TABLE EXISTS:
+          - Verify the table exists in the database
+          - If not, score is 0 and flag as critical issue
+       
+       b) FIELD VALIDATION:
+          - Check that all fields listed in the configuration actually exist in the table
+          - Get the actual table schema and compare
+          - Flag any fields that don't exist
+       
+       c) DESCRIPTION QUALITY:
+          - Check description length (should be 50-500 characters)
+          - Verify it's informative and clear
+          - Not too short or too verbose
+       
+       d) TASK COMPLETENESS:
+          - Verify transformation tasks are defined (at least 1, maximum 10)
+          - Check they reference actual fields from the table
+          - Ensure tasks are realistic and achievable
+       
+       e) VALIDATION RULES:
+          - Check that validation rules are defined (at least 2)
+          - Verify they make sense for the data types
+          - Ensure they're specific and measurable
+       
+       f) VISUALIZATION:
+          - Check visualization recommendation exists and is descriptive (>20 chars)
+          - Verify it's appropriate for the data type
+    
+    3. SCORING:
+       Use validate_table_config tool for each table to get a detailed assessment.
+       
+       Score each configuration on a scale of 0-5:
+       - 0: Critical issues (table doesn't exist, no fields match)
+       - 1-2: Poor (missing sections, most fields invalid, weak descriptions)
+       - 3: OK (all sections present, some issues with field validation or descriptions)
+       - 4: Good (well-formed, minor issues only)
+       - 5: Excellent (all checks pass, high quality configuration)
+       
+       Scoring breakdown:
+       - Table exists: +1 point
+       - All required sections present: +1 point
+       - All fields valid: +1 point
+       - Good description (50-500 chars): +0.5 points
+       - Adequate tasks (1-10 defined): +0.5 points
+       - Adequate validations (2+ defined): +0.5 points
+       - Good visualization (20+ chars): +0.5 points
+    
+    4. GENERATE REPORT:
+       Create a comprehensive quality assessment report with:
+       - Overall summary (total tables, average score)
+       - Individual table scores with interpretation (Bad/Poor/OK/Good/Excellent)
+       - Key issues found (grouped by severity: critical, major, minor)
+       - Key strengths found
+       - Recommendations for improvements
+       - Tables that need immediate attention (score < 3)
+    
+    5. OUTPUT FORMAT:
+       Structure the report clearly:
+       
+       QUALITY ASSESSMENT REPORT
+       =========================
+       
+       File Analyzed: {output_yaml_path}
+       Total Tables: X
+       Average Score: Y.Y / 5.0
+       
+       INDIVIDUAL TABLE SCORES:
+       table_name_1: 4.5/5.0 (Excellent)
+       table_name_2: 3.0/5.0 (OK)
+       table_name_3: 1.5/5.0 (Poor)
+       
+       CRITICAL ISSUES (Score 0-2):
+       - Details of critical problems
+       
+       MAJOR ISSUES (Score 2-3):
+       - Details of major problems
+       
+       MINOR ISSUES (Score 3-4):
+       - Details of minor problems
+       
+       STRENGTHS:
+       - Positive aspects found
+       
+       TABLES NEEDING ATTENTION:
+       - List tables with score < 3
+       
+       RECOMMENDATIONS:
+       - Actionable suggestions for improvement
+    
+  expected_output: >
+    A detailed quality assessment report showing:
+    - Individual scores (0-5) for each table configuration
+    - Overall average score across all tables
+    - Specific issues identified (critical, major, minor)
+    - Strengths of the configurations
+    - Clear recommendations for improvements
+    - List of tables requiring immediate attention (score < 3)
+    
+    The report should be actionable and help identify which configurations
+    need to be revised or improved.
+    
+    CRITICAL - WRITE QUALITY REPORT:
+    After completing all validations, you MUST call the write_quality_report tool
+    with a JSON string containing ALL validation results. The JSON structure must be:
+    
+    {{
+      "total_tables": <number>,
+      "average_score": <float>,
+      "tables": {{
+        "<table_name_1>": {{
+          "score": <float 0-5>,
+          "interpretation": "<Bad|Poor|OK|Good|Excellent>",
+          "validations": {{
+            "table_exists": <bool>,
+            "all_sections_present": <bool>,
+            "fields": {{
+              "total_fields": <int>,
+              "valid_fields": <int>,
+              "invalid_fields": [<list of invalid field names>]
+            }},
+            "description_length": <int>,
+            "task_count": <int>,
+            "validation_count": <int>,
+            "visualization_length": <int>
+          }},
+          "issues": [<list of issue strings>],
+          "strengths": [<list of strength strings>],
+          "recommendations": [<list of recommendation strings>]
+        }},
+        "<table_name_2>": {{ ... }},
+        ...
+      }},
+      "critical_issues": [<list of critical issues>],
+      "major_issues": [<list of major issues>],
+      "minor_issues": [<list of minor issues>],
+      "overall_strengths": [<list of overall strengths>],
+      "tables_needing_attention": [
+        {{
+          "table": "<table_name>",
+          "score": <float>,
+          "reason": "<reason string>"
+        }}
+      ],
+      "recommendations": [<list of overall recommendations>]
+    }}
+    
+    The output_path should use the '{quality_report}' input parameter provided.
+    (e.g., 'data/config/structured_data_report.yaml').
+    
+    You MUST include data for EVERY table that was validated. Do not leave the tables dict empty.
+    
+    REMEMBER: Call write_quality_report with output_path='{quality_report}' to save the report.
+

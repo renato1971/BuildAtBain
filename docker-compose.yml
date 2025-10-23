@@ -1,0 +1,163 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: newsletter_postgres
+    environment:
+      POSTGRES_DB: newsletter_db
+      POSTGRES_USER: bain
+      POSTGRES_PASSWORD: bain
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - newsletter_network
+    restart: unless-stopped
+
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.24.8
+    container_name: newsletter_weaviate
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      CLUSTER_HOSTNAME: 'node1'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    networks:
+      - newsletter_network
+    restart: unless-stopped
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: newsletter_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@bain.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+      PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin-servers.json:/pgadmin4/servers.json:ro
+      - ./pgpass:/pgpass:ro
+    ports:
+      - "5050:80"
+    networks:
+      - newsletter_network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    user: root
+    entrypoint: >
+      /bin/sh -c "
+      cp /pgpass /tmp/pgpass &&
+      chmod 600 /tmp/pgpass &&
+      chown pgadmin:pgadmin /tmp/pgpass &&
+      sed -i 's|/pgpass|/tmp/pgpass|g' /pgadmin4/servers.json || true &&
+      /entrypoint.sh
+      "
+  
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: newsletter_api
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=newsletter_db
+      - POSTGRES_USER=bain
+      - POSTGRES_PASSWORD=bain
+      - WEAVIATE_URL=http://weaviate:8080
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERPER_API_KEY=${SERPER_API_KEY}
+      # SSL/Certificate bypass for development
+      - PYTHONHTTPSVERIFY=0
+      - REQUESTS_CA_BUNDLE=
+      - SSL_CERT_FILE=
+      - CURL_CA_BUNDLE=
+      # Disable CrewAI telemetry to avoid SSL errors
+      - OTEL_SDK_DISABLED=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./output:/app/output:rw
+    depends_on:
+      - postgres
+      - weaviate
+    networks:
+      - newsletter_network
+    restart: unless-stopped
+
+  newsletter_app:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: newsletter_app
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=newsletter_db
+      - POSTGRES_USER=bain
+      - POSTGRES_PASSWORD=bain
+      - WEAVIATE_URL=http://weaviate:8080
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERPER_API_KEY=${SERPER_API_KEY}
+      # SSL/Certificate bypass for development
+      - PYTHONHTTPSVERIFY=0
+      - REQUESTS_CA_BUNDLE=
+      - SSL_CERT_FILE=
+      - CURL_CA_BUNDLE=
+      # Disable CrewAI telemetry to avoid additional SSL errors
+      - OTEL_SDK_DISABLED=true
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./output:/app/output
+      - ./templates:/app/templates
+    depends_on:
+      - postgres
+      - weaviate
+    networks:
+      - newsletter_network
+    restart: unless-stopped
+    profiles:
+      - app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: newsletter_frontend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - newsletter_network
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+    driver: local
+  weaviate_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  newsletter_network:
+    driver: bridge

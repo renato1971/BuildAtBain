@@ -1,0 +1,29 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "{{ chart_title }}",
+  "width": 200,
+  "height": 100,
+  "data": {
+    "values": {{ data | safe }}
+  },
+  "title": "{{ chart_title }}",
+  "layer": [
+    {
+      "mark": "line",
+      "encoding": {
+        "x": {"field": "year_month", "type": "temporal", "axis": {"title": "Date"}},
+        "y": {"field": "acc_ipca_value", "type": "quantitative", "axis": {"title": "Accumulated variation (12 months)"}}
+      }
+    },
+    {
+      "transform": [
+        {"regression": "acc_ipca_value", "on": "year_month"}
+      ],
+      "mark": {"type": "line", "color": "firebrick", "strokeDash": [4,2]},
+      "encoding": {
+        "x": {"field": "year_month", "type": "temporal"},
+        "y": {"field": "acc_ipca_value", "type": "quantitative"}
+      }
+    }
+  ]
+}

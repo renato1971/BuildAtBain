@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0; padding:0; background:#F5F1EA;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F5F1EA;">
+      <tr>
+        <td align="center" style="padding:26px;">
+          <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:640px; max-width:640px; background:#FBF8F2; border:2px solid #2C2C2C; border-radius:14px;">
+            <!-- Masthead -->
+            <tr>
+              <td style="padding:22px 26px 8px; font-family: Georgia, 'Times New Roman', serif; color:#2C2C2C;">
+                <div style="font-style:italic; font-size:20px;">{masthead_name}</div>
+                <h1 style="margin:8px 0 0; font-size:44px; line-height:1; letter-spacing:-.5px; font-weight:900; font-family:{font_stack};">
+                  NEWSLETTER
+                </h1>
+                <div style="height:1px; background:#2C2C2C; margin:12px 0;"></div>
+                <div style="font-size:12px; display:flex; justify-content:space-between;">
+                  <span>{publish_date}</span><span>@{handle}</span><span>{weekday}</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- HERO (DALL·E) -->
+            <tr>
+              <td style="padding:14px 26px 6px;">
+                <img src="{hero_image_url}" alt="{hero_image_alt}" style="display:block; width:100%; height:auto; border:1px solid #2C2C2C; border-radius:10px;">
+              </td>
+            </tr>
+
+            <!-- Breaking -->
+            <tr>
+              <td style="padding:18px 26px 8px; font-family:{font_stack};">
+                <div style="font-size:12px; font-weight:800; letter-spacing:.12em;">BREAKING NEWS:</div>
+                <h2 style="margin:6px 0 0; font-size:30px; line-height:1.15; font-weight:900; color:#111;">
+                  {headline}
+                </h2>
+                <div style="font-family: Georgia, 'Times New Roman', serif; font-size:14px; color:#404040; margin-top:6px; font-style:italic;">
+                  {subhead}
+                </div>
+              </td>
+            </tr>
+
+            <!-- Article row (single-column, no image) -->
+            <tr>
+              <td style="padding:14px 26px 6px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="vertical-align:top; font-family: Georgia, 'Times New Roman', serif; font-size:15px; line-height:1.7; color:#1F1F1F;">
+                      <strong>Article Snippet:</strong> {snippet_intro}<br><br>
+                      {snippet_body}
+                      <div style="margin-top:12px;">
+                        <a href="{read_more_url}" style="display:inline-block; padding:10px 16px; border:2px solid #2C2C2C; border-radius:24px; color:#111; text-decoration:none; font-family:{font_stack}; font-weight:700;">
+                          Read more
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- FEATURE-SECTION-BEGIN -->
+            <!-- Always-on secondary feature (image + copy) -->
+            <tr>
+              <td style="padding:14px 26px 6px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <!-- Fixed chart image (ONLY second image in the email) -->
+                    <td width="46%" style="vertical-align:top; padding-right:14px;">
+                      <img src="output/structured_data/charts/ipca.png" alt="{section_2_image_alt}" width="260" style="display:block; width:100%; height:auto; border:1px solid #2C2C2C; border-radius:10px;">
+                    </td>
+                    <td width="54%" style="vertical-align:top; padding-left:14px; font-family: Georgia, 'Times New Roman', serif; font-size:15px; line-height:1.7; color:#1F1F1F;">
+                      <div style="font-size:12px; font-weight:800; letter-spacing:.12em;">FEATURE</div>
+                      <h3 style="margin:6px 0 8px; font-size:22px; line-height:1.25; font-weight:900; color:#111;">{section_2_title}</h3>
+                      {section_2_body}
+                      <div style="margin-top:10px;">
+                        <a href="{section_2_link}" style="display:inline-block; padding:8px 14px; border:2px solid #2C2C2C; border-radius:22px; color:#111; text-decoration:none; font-family:{font_stack}; font-weight:700;">
+                          Read more
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- FEATURE-SECTION-END -->
+
+            <!-- VECTOR-INSIGHTS-SECTION-BEGIN -->
+            <tr>
+              <td style="padding:14px 26px 6px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:2px solid #2C2C2C; border-radius:10px; background:#FBF8F2;">
+                  <tr>
+                    <td style="padding:16px; font-family: Georgia, 'Times New Roman', serif; color:#2C2C2C;">
+                      <div style="font-size:12px; font-weight:800; letter-spacing:.12em;">VECTOR INSIGHTS</div>
+                      <h3 style="margin:6px 0 8px; font-size:22px; line-height:1.25; font-weight:900; color:#111;">{vector_section_title}</h3>
+
+                      <!-- Executive Summary bullets -->
+                      <div style="font-size:15px; line-height:1.7; color:#1F1F1F;">
+                        {vector_exec_bullets}
+                      </div>
+
+                      <!-- Why it matters -->
+                      <p style="margin:8px 0 10px; font-size:14px; line-height:1.7; color:#1F1F1F;">
+                        {vector_why_paragraph}
+                      </p>
+
+                      <!-- Quotes/snippets (optional) -->
+                      <div style="margin-top:8px; font-size:14px; line-height:1.6; color:#1F1F1F;">
+                        {vector_quotes_html}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- VECTOR-INSIGHTS-SECTION-END -->
+
+            <!-- Footer box -->
+            <tr>
+              <td style="padding:18px 26px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:2px solid #2C2C2C;">
+                  <tr>
+                    <td style="padding:16px; text-align:center; font-family: Georgia, 'Times New Roman', serif;">
+                      <div style="font-weight:800; font-size:18px; margin:0 0 6px;">Join our Membership Today!</div>
+                      <div style="font-size:14px; color:#404040;">Contact us at {contact_email} for more info and tips.</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

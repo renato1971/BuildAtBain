@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Newsletter Database",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "newsletter_db",
+      "Username": "bain",
+      "SSLMode": "prefer",
+      "PassFile": "/pgpass"
+    }
+  }
+}
+

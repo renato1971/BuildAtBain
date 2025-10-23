@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0; padding:0; background:{brand_bg};">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:{brand_bg};">
+      <tr>
+        <td align="center" style="padding:24px;">
+          <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:640px; max-width:640px; background:#FFFFFF; border:1px solid #E6E7E8; border-radius:14px; overflow:hidden;">
+            <!-- Top bar -->
+            <tr>
+              <td style="padding:10px 18px; font-family:{font_stack}; font-size:12px; color:{brand_muted}; text-align:right;">
+                {publish_date} · @{handle}
+              </td>
+            </tr>
+
+            <!-- Header / Title -->
+            <tr>
+              <td style="padding:18px 24px 8px 24px; font-family:{font_stack};">
+                <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:{brand_secondary}; margin-bottom:6px;">{newsletter_kicker}</div>
+                <h1 style="margin:0; font-size:40px; line-height:1.05; font-weight:900; color:{brand_text};">
+                  {newsletter_title}
+                </h1>
+                <div style="height:1px; background:#E6E7E8; margin:14px 0;"></div>
+              </td>
+            </tr>
+
+            <!-- Big headline (eyebrow) -->
+            <tr>
+              <td style="padding:0 24px 8px 24px; font-family:{font_stack};">
+                <div style="font-size:12px; font-weight:700; color:{brand_secondary}; letter-spacing:.08em;">
+                  {eyebrow}
+                </div>
+                <h2 style="margin:6px 0 0; font-size:26px; line-height:1.25; font-weight:800; color:{brand_text};">
+                  {big_headline}
+                </h2>
+              </td>
+            </tr>
+
+            <!-- HERO (DALL·E) -->
+            <tr>
+              <td style="padding:12px 24px 6px 24px;">
+                <img src="{hero_image_url}" alt="{hero_image_alt}" width="592" style="display:block; width:100%; max-width:592px; height:auto; border-radius:12px;">
+              </td>
+            </tr>
+
+            <!-- Main copy (single-column, no image) -->
+            <tr>
+              <td style="padding:10px 24px 6px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="vertical-align:top; font-family:{font_stack}; color:{brand_text}; font-size:15px; line-height:1.6;">
+                      <p style="margin:0 0 10px;">{lead_paragraph}</p>
+                      <ul style="margin:0; padding-left:18px;">
+                        <li>{bullet_1}</li>
+                        <li>{bullet_2}</li>
+                        <li>{bullet_3}</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- CTA primary -->
+            <tr>
+              <td align="center" style="padding:8px 24px 18px 24px;">
+                <a href="{cta_url}" style="display:inline-block; background:{brand_primary}; color:#FFFFFF; text-decoration:none; padding:14px 22px; border-radius:28px; font-family:{font_stack}; font-size:14px; font-weight:700;">
+                  {cta_label}
+                </a>
+              </td>
+            </tr>
+
+            <!-- FEATURE-SECTION-BEGIN -->
+            <!-- Always-on secondary feature (image + copy) -->
+            <tr>
+              <td style="padding:12px 24px 20px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:{brand_surface}; border:1px solid #E6E7E8; border-radius:12px;">
+                  <tr>
+                    <td style="padding:16px; font-family:{font_stack}; color:{brand_text};">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td width="36%" style="vertical-align:top; padding-right:12px;">
+                            <!-- Fixed chart image (ONLY second image in the email) -->
+                            <img src="output/structured_data/charts/ipca.png" alt="{section_2_image_alt}" width="200" style="display:block; width:100%; height:auto; border-radius:10px;">
+                          </td>
+                          <td width="64%" style="vertical-align:top; padding-left:12px;">
+                            <h3 style="margin:0 0 6px; font-size:20px; line-height:1.35;">{section_2_title}</h3>
+                            <p style="margin:0 0 10px; font-size:14px; line-height:1.6;">{section_2_body}</p>
+                            <!-- Optional link -->
+                            <a href="{section_2_link}" style="color:{brand_primary}; text-decoration:none; font-weight:600;">Read more →</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- FEATURE-SECTION-END -->
+
+            <!-- VECTOR-INSIGHTS-SECTION-BEGIN -->
+            <tr>
+              <td style="padding:12px 24px 20px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:{brand_surface}; border:1px solid #E6E7E8; border-radius:12px;">
+                  <tr>
+                    <td style="padding:16px; font-family:{font_stack}; color:{brand_text};">
+                      <div style="font-size:12px; font-weight:800; letter-spacing:.12em; color:{brand_secondary}; margin-bottom:6px;">VECTOR INSIGHTS</div>
+                      <h3 style="margin:0 0 8px; font-size:20px; line-height:1.35;">{vector_section_title}</h3>
+
+                      <!-- Executive Summary bullets -->
+                      <div style="font-size:14px; line-height:1.6; margin:0 0 8px;">
+                        {vector_exec_bullets}
+                      </div>
+
+                      <!-- Why it matters -->
+                      <p style="margin:6px 0 10px; font-size:14px; line-height:1.6;">{vector_why_paragraph}</p>
+
+                      <!-- Quotes/snippets (optional) -->
+                      <div style="margin-top:8px; font-size:13px; line-height:1.5;">
+                        {vector_quotes_html}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- VECTOR-INSIGHTS-SECTION-END -->
+
+            <!-- Divider -->
+            <tr><td style="height:1px; background:#E6E7E8;"></td></tr>
+
+            <!-- Stats strip -->
+            <tr>
+              <td style="padding:14px 24px; font-family:{font_stack};">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td align="center" style="padding:10px; border:1px solid #E6E7E8; border-radius:10px;">
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td style="padding:0 18px; font-size:28px; font-weight:800; color:{brand_text};">{stat_1_value}</td>
+                          <td style="padding:0 18px; font-size:28px; font-weight:800; color:{brand_text};">{stat_2_value}</td>
+                          <td style="padding:0 18px; font-size:28px; font-weight:800; color:{brand_text};">{stat_3_value}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding:2px 18px; font-size:12px; color:{brand_muted}; text-align:center;">{stat_1_label}</td>
+                          <td style="padding:2px 18px; font-size:12px; color:{brand_muted}; text-align:center;">{stat_2_label}</td>
+                          <td style="padding:2px 18px; font-size:12px; color:{brand_muted}; text-align:center;">{stat_3_label}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding:16px 20px 22px 20px; font-family:{font_stack}; font-size:12px; color:{brand_muted}; text-align:center;">
+                {footer_text}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

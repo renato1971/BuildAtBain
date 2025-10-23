@@ -1,0 +1,45 @@
+# Environment files - prevent local config from overriding Docker env vars
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Logs
+logs/
+*.log
+
+# Test files
+.pytest_cache/
+
+# macOS
+.DS_Store
+
+# Output and data (mounted as volumes)
+output/
+data/raw/
+data/processed/
+
+# Database
+db/
+*.sqlite3
+

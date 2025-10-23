@@ -1,0 +1,23 @@
+ipca:
+  table_name: ipca
+  description: >
+    The IPCA (Índice Nacional de Preços ao Consumidor Amplo) is the main measure of inflation in Brazil.
+    It reflects the changes in prices of a basket of goods and services consumed by households.
+  fields:
+    - valor
+    - m_s__c_digo_
+  task:
+    - Rename valor to acc_ipca_value
+    - Rename m_s__c_digo_ to year_month 
+    - Convert year_month (int yyyymm e.g. 202301) to a date format (YYYY-MM) (e.g. 2023301 >> 2023-01)
+    - Filter by geral__grupo__subgrupo__item_e_subitem__c_digo_ = '7169' (which indicates the overall IPCA)
+    - Filter by vari_vel__c_digo_ = '2265' (which indicates the accumulated IPCA over the last 12 months)
+    - Return the most recent 12 months of data
+  validations:
+    - The query returns exactly 12 rows
+    - There are no null values in the acc_ipca_value field
+    - year_month field is in the correct date format (YYYY-MM)
+    - All year_month values are unique
+  visualization:
+    Time series line chart of monthly IPCA values for the most recent 12 months 
+    in the dataset.
