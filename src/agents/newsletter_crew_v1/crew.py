@@ -13,9 +13,11 @@ from src.tools.template_loader import TemplateLoaderTool
 
 load_dotenv(".env", override=True)
 
-web_search_tool = WebsiteSearchTool()
+#tools no momento são focadas só no websearch
+#implementação nativa do crewAI
+web_search_tool = WebsiteSearchTool() 
 seper_dev_tool = SerperDevTool()
-dalle_tool = DallETool()
+dalle_tool = DallETool() #assunto para as próximas aulas, gera a imagem.
 template_tool = TemplateLoaderTool(templates_dir="templates")
 
 
